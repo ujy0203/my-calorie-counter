@@ -1,5 +1,5 @@
 """
-6주차 실습: HuggingFace Space 칼로리 카운터 (LangChain LCEL 버전)
+666주차 실습: HuggingFace Space 칼로리 카운터 (LangChain LCEL 버전)
 ================================================================
 음식 사진을 업로드하면
   1) HF Inference API의 이미지 분류 모델로 음식을 인식하고
