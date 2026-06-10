@@ -44,7 +44,7 @@ def analyze_paper(pdf_file):
         )
 
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.5-flash")
 
     prompt = f"""
 너는 대학생의 논문 발표를 도와주는 AI 발표 도우미다.
@@ -92,7 +92,7 @@ def build_ui():
             file_types=[".pdf"]
         ),
         outputs=gr.Markdown(label="AI 분석 결과"),
-        title="📄 AI 논문 발표 도우미",
+        title="📄 논문 발표 도우미",
         description=(
             "논문 PDF를 업로드하면 AI가 연구 목적, 연구 방법, 주요 결과, "
             "발표 대본, 예상 질문을 자동으로 생성합니다."
