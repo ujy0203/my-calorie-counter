@@ -568,55 +568,79 @@ button.primary {
         grid-template-columns: 1fr;
     }
 }
-/* ===== Upload UI redesign ===== */
+/* ===== FINAL UPLOAD REDESIGN ===== */
 
-#paper-upload > label {
+/* label 제거 */
+#paper-upload > label,
+#paper-upload .block-label {
     display:none !important;
 }
 
+/* 바깥 점선 박스만 유지 */
+#paper-upload {
+    border:2px dashed #93c5fd !important;
+    border-radius:24px !important;
+    background:#f8fbff !important;
+    padding:18px !important;
+}
+
+/* 내부 박스 제거 */
 #paper-upload .wrap,
 #paper-upload .file-wrap,
-#paper-upload [data-testid="file-upload"] {
-    border:none !important;
-    background:transparent !important;
-    box-shadow:none !important;
-}
-
 #paper-upload .file-drop,
-#paper-upload [class*="drop"] {
+#paper-upload [class*="drop"],
+#paper-upload [class*="upload"],
+#paper-upload [data-testid*="file"] {
     border:none !important;
+    box-shadow:none !important;
     background:transparent !important;
 }
 
-#paper-upload button,
-#paper-upload .secondary,
-#paper-upload .lg,
-#paper-upload [role="button"] {
-    background: white !important;
-    color:#2563eb !important;
+/* 업로드 전 */
+#paper-upload [class*="upload"] {
+    min-height:220px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+    align-items:center !important;
+    gap:12px !important;
+    padding:20px !important;
 }
 
-#paper-upload [class*="upload"],
-#paper-upload [class*="drop"] {
-    min-height:160px !important;
-}
-
+/* 아이콘 */
 #paper-upload svg {
-    color:#2563eb !important;
+    color:#3b82f6 !important;
+    width:42px !important;
+    height:42px !important;
 }
 
+/* 업로드 후 카드 하나만 */
 #paper-upload [class*="preview"],
+#paper-upload [class*="file-preview"],
 #paper-upload [class*="file"] {
     background:#ffffff !important;
     border:1px solid #dbeafe !important;
     border-radius:18px !important;
+    box-shadow:none !important;
+}
+
+/* 중첩 배경 제거 */
+#paper-upload [class*="preview"] * {
+    background:transparent !important;
+}
+
+/* X 버튼 */
+#paper-upload button[aria-label],
+#paper-upload .icon-button,
+#paper-upload button svg {
+    color:#3b82f6 !important;
 }
 
 #paper-upload button[aria-label*="Remove"],
 #paper-upload button[aria-label*="remove"] {
     background:#eff6ff !important;
-    color:#2563eb !important;
-    border:none !important;
+    border:1px solid #bfdbfe !important;
+    border-radius:999px !important;
 }
 
 """
