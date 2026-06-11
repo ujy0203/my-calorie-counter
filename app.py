@@ -1,28 +1,36 @@
 from __future__ import annotations
 
+import html
 import os
+
 import fitz  # PyMuPDF
+import google.generativeai as genai
 import gradio as gr
 from dotenv import load_dotenv
-import google.generativeai as genai
 
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 
-def extract_text_from_pdf(pdf_file) -> str:
+def get_pdf_path(pdf_file) -> str:
     if pdf_file is None:
         return ""
+    return getattr(pdf_file, "name", str(pdf_file))
 
-    doc = fitz.open(pdf_file.name)
+
+def extract_text_from_pdf(pdf_file) -> str:
+    pdf_path = get_pdf_path(pdf_file)
+    if not pdf_path:
+        return ""
+
+    doc = fitz.open(pdf_path)
     text = ""
 
     for page in doc:
         text += page.get_text()
 
     doc.close()
-
     return text[:12000]
 
 
@@ -36,13 +44,14 @@ def get_file_info(pdf_file):
         </div>
         """
 
-    file_name = os.path.basename(pdf_file.name)
-    file_size = os.path.getsize(pdf_file.name) / (1024 * 1024)
+    pdf_path = get_pdf_path(pdf_file)
+    file_name = html.escape(os.path.basename(pdf_path))
+    file_size = os.path.getsize(pdf_path) / (1024 * 1024)
 
     return f"""
-    <div class="file-preview">
-      <div class="file-icon">PDF</div>
-      <div class="file-info">
+    <div class="file-preview-custom">
+      <div class="file-icon-custom">PDF</div>
+      <div class="file-info-custom">
         <strong>{file_name}</strong>
         <span>{file_size:.1f} MB · 업로드 완료</span>
       </div>
@@ -78,7 +87,7 @@ def analyze_paper(pdf_file):
         )
 
     if not GEMINI_API_KEY:
-        preview = paper_text[:2000].replace("<", "&lt;").replace(">", "&gt;")
+        preview = html.escape(paper_text[:2000])
         return (
             "<span class='status-error'>API 키 없음</span>",
             f"""
@@ -132,10 +141,7 @@ def analyze_paper(pdf_file):
 
     try:
         response = model.generate_content(prompt)
-        return (
-            "<span class='status-ok'>분석 완료</span>",
-            response.text
-        )
+        return "<span class='status-ok'>분석 완료</span>", response.text
     except Exception as e:
         return (
             "<span class='status-error'>분석 오류</span>",
@@ -143,7 +149,7 @@ def analyze_paper(pdf_file):
             <div class="result-empty">
               <div class="big">⚠️</div>
               <strong>AI 분석 중 오류가 발생했습니다.</strong>
-              <p>{type(e).__name__}: {str(e)}</p>
+              <p>{type(e).__name__}: {html.escape(str(e))}</p>
             </div>
             """
         )
@@ -232,11 +238,11 @@ CUSTOM_CSS = """
 }
 
 .clean-card {
-    background: white;
-    border: 1px solid #dbe4ef;
-    border-radius: 26px;
-    padding: 26px;
-    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+    background: white !important;
+    border: 1px solid #dbe4ef !important;
+    border-radius: 26px !important;
+    padding: 26px !important;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08) !important;
 }
 
 .clean-card h2 {
@@ -252,41 +258,48 @@ CUSTOM_CSS = """
     line-height: 1.65;
 }
 
-.upload-help {
-    border: 2px dashed #93c5fd;
-    background: #f8fbff;
-    border-radius: 22px;
-    padding: 26px 20px;
-    text-align: center;
-    margin-bottom: 16px;
+/* 실제 Gradio File 컴포넌트를 업로드 박스처럼 보이게 수정 */
+#paper-upload {
+    border: 2px dashed #93c5fd !important;
+    background: #f8fbff !important;
+    border-radius: 22px !important;
+    padding: 24px !important;
+    min-height: 210px !important;
 }
 
-.upload-help .icon {
-    width: 62px;
-    height: 62px;
-    border-radius: 18px;
-    display: grid;
-    place-items: center;
-    margin: 0 auto 14px;
-    background: #dbeafe;
-    color: #1d4ed8;
-    font-size: 30px;
+#paper-upload:hover {
+    border-color: #2563eb !important;
+    background: #eff6ff !important;
 }
 
-.upload-help strong {
-    display: block;
-    color: #1e3a8a;
-    font-size: 17px;
-    margin-bottom: 6px;
+#paper-upload button,
+#paper-upload .button {
+    background: white !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+    border-radius: 12px !important;
+    font-weight: 800 !important;
 }
 
-.upload-help span {
-    color: #64748b;
-    font-size: 14px;
+#paper-upload * {
+    color: #334155 !important;
 }
 
-.file-preview {
-    margin-top: 12px;
+#paper-upload [class*="file"],
+#paper-upload [data-testid*="file"] {
+    background: transparent !important;
+}
+
+#paper-upload [class*="preview"],
+#paper-upload [class*="File"],
+#paper-upload [class*="file-preview"] {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #e2e8f0 !important;
+}
+
+.file-preview-custom {
+    margin-top: 16px;
     padding: 16px;
     border-radius: 18px;
     background: #f8fafc;
@@ -296,7 +309,7 @@ CUSTOM_CSS = """
     align-items: center;
 }
 
-.file-icon {
+.file-icon-custom {
     width: 46px;
     height: 46px;
     border-radius: 14px;
@@ -305,16 +318,16 @@ CUSTOM_CSS = """
     display: grid;
     place-items: center;
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 900;
     flex: 0 0 auto;
 }
 
-.file-info {
+.file-info-custom {
     min-width: 0;
     flex: 1;
 }
 
-.file-info strong {
+.file-info-custom strong {
     display: block;
     font-size: 14px;
     color: #0f172a;
@@ -323,13 +336,13 @@ CUSTOM_CSS = """
     text-overflow: ellipsis;
 }
 
-.file-info span {
+.file-info-custom span {
     font-size: 13px;
     color: #64748b;
 }
 
 .empty-file {
-    margin-top: 12px;
+    margin-top: 16px;
     padding: 22px;
     border-radius: 18px;
     background: #f8fafc;
@@ -374,7 +387,8 @@ button.primary {
 .status-ok,
 .status-warn,
 .status-error,
-.status-ready {
+.status-ready,
+.status-loading {
     display: inline-block;
     padding: 6px 11px;
     border-radius: 999px;
@@ -389,6 +403,11 @@ button.primary {
 }
 
 .status-ready {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.status-loading {
     background: #eff6ff;
     color: #1d4ed8;
 }
@@ -492,19 +511,37 @@ button.primary {
     to { width: 86%; }
 }
 
+/* 분석 결과 가독성 개선 */
+#analysis-output,
+#analysis-output * {
+    color: #1f2937 !important;
+}
+
+#analysis-output h1,
+#analysis-output h2,
+#analysis-output h3 {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    margin-top: 1.2em !important;
+}
+
+#analysis-output p,
+#analysis-output li {
+    color: #334155 !important;
+    line-height: 1.8 !important;
+    font-size: 15px !important;
+}
+
+#analysis-output ul,
+#analysis-output ol {
+    color: #334155 !important;
+}
+
 .footer-note {
     color: #64748b;
     text-align: center;
     font-size: 13px;
     margin: 28px 0 10px;
-}
-
-/* Gradio 내부 기본 컴포넌트 톤 조정 */
-.clean-card .block,
-.clean-card .form,
-.clean-card .wrap {
-    background: transparent !important;
-    border-color: #e2e8f0 !important;
 }
 
 @media (max-width: 960px) {
@@ -544,7 +581,6 @@ LOADING_HTML = """
   </div>
 </div>
 """
-
 
 EMPTY_RESULT_HTML = """
 <div class="result-empty">
@@ -596,17 +632,13 @@ def build_ui():
                         """
                         <h2>논문 PDF 업로드</h2>
                         <p class="card-desc">분석할 논문 PDF 파일을 업로드한 뒤 분석 버튼을 눌러 주세요.</p>
-                        <div class="upload-help">
-                            <div class="icon">📎</div>
-                            <strong>PDF 파일을 여기에 업로드</strong>
-                            <span>논문 PDF 파일을 선택하거나 드래그해서 업로드할 수 있습니다.</span>
-                        </div>
                         """
                     )
 
                     pdf_input = gr.File(
                         label="PDF 파일 선택",
                         file_types=[".pdf"],
+                        elem_id="paper-upload",
                     )
 
                     file_info = gr.HTML(value=get_file_info(None))
@@ -630,7 +662,7 @@ def build_ui():
                         )
                         status = gr.HTML(value="<span class='status-ready'>Ready</span>")
 
-                    output = gr.Markdown(value=EMPTY_RESULT_HTML)
+                    output = gr.Markdown(value=EMPTY_RESULT_HTML, elem_id="analysis-output")
 
             pdf_input.change(
                 fn=get_file_info,
@@ -639,7 +671,7 @@ def build_ui():
             )
 
             submit_btn.click(
-                fn=lambda: ("<span class='status-ready'>분석 중</span>", LOADING_HTML),
+                fn=lambda: ("<span class='status-loading'>분석 중</span>", LOADING_HTML),
                 inputs=None,
                 outputs=[status, output],
                 queue=False,
