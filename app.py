@@ -568,6 +568,57 @@ button.primary {
         grid-template-columns: 1fr;
     }
 }
+/* ===== Upload UI redesign ===== */
+
+#paper-upload > label {
+    display:none !important;
+}
+
+#paper-upload .wrap,
+#paper-upload .file-wrap,
+#paper-upload [data-testid="file-upload"] {
+    border:none !important;
+    background:transparent !important;
+    box-shadow:none !important;
+}
+
+#paper-upload .file-drop,
+#paper-upload [class*="drop"] {
+    border:none !important;
+    background:transparent !important;
+}
+
+#paper-upload button,
+#paper-upload .secondary,
+#paper-upload .lg,
+#paper-upload [role="button"] {
+    background: white !important;
+    color:#2563eb !important;
+}
+
+#paper-upload [class*="upload"],
+#paper-upload [class*="drop"] {
+    min-height:160px !important;
+}
+
+#paper-upload svg {
+    color:#2563eb !important;
+}
+
+#paper-upload [class*="preview"],
+#paper-upload [class*="file"] {
+    background:#ffffff !important;
+    border:1px solid #dbeafe !important;
+    border-radius:18px !important;
+}
+
+#paper-upload button[aria-label*="Remove"],
+#paper-upload button[aria-label*="remove"] {
+    background:#eff6ff !important;
+    color:#2563eb !important;
+    border:none !important;
+}
+
 """
 
 
