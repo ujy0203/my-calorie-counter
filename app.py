@@ -80,25 +80,202 @@ def analyze_paper(pdf_file):
 {paper_text}
 """
 
-    response = model.generate_content(prompt)
-    return response.text
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        return f"AI 분석 중 오류가 발생했습니다.\n\n오류 내용: {type(e).__name__}: {str(e)}"
+
+
+CUSTOM_CSS = """
+.gradio-container {
+    background: #eef2f7 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif !important;
+}
+
+.main-wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.hero-card {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    color: white;
+    border-radius: 26px;
+    padding: 44px;
+    margin: 28px 0 22px;
+    box-shadow: 0 20px 48px rgba(30, 58, 138, 0.25);
+}
+
+.hero-badge {
+    display: inline-block;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.18);
+    margin-bottom: 14px;
+}
+
+.hero-title {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin: 0 0 12px;
+}
+
+.hero-desc {
+    font-size: 17px;
+    line-height: 1.75;
+    opacity: 0.95;
+    max-width: 760px;
+    margin: 0;
+}
+
+.guide-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin: 18px 0 24px;
+}
+
+.guide-box {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 18px;
+    min-height: 112px;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+}
+
+.guide-box strong {
+    color: #1e3a8a;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+.guide-box span {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.upload-panel {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 26px;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+    margin-bottom: 24px;
+}
+
+.result-panel {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 26px;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+}
+
+button.primary {
+    background: #2563eb !important;
+    border-radius: 14px !important;
+    font-weight: 800 !important;
+}
+
+.footer-note {
+    color: #64748b;
+    text-align: center;
+    font-size: 13px;
+    margin: 28px 0 10px;
+}
+
+@media (max-width: 900px) {
+    .guide-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .hero-title {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 640px) {
+    .guide-grid {
+        grid-template-columns: 1fr;
+    }
+    .hero-card {
+        padding: 30px;
+    }
+}
+"""
 
 
 def build_ui():
-    return gr.Interface(
-        fn=analyze_paper,
-        inputs=gr.File(
-            label="논문 PDF 업로드",
-            file_types=[".pdf"]
-        ),
-        outputs=gr.Markdown(label="AI 분석 결과"),
-        title="📄 논문 발표 도우미",
-        description=(
-            "논문 PDF를 업로드하면 AI가 연구 목적, 연구 방법, 주요 결과, "
-            "발표 대본, 예상 질문을 자동으로 생성합니다."
-        ),
-        flagging_mode="never",
-    )
+    with gr.Blocks(css=CUSTOM_CSS, title="AI 논문 발표 도우미") as demo:
+        with gr.Column(elem_classes=["main-wrap"]):
+            gr.HTML(
+                """
+                <section class="hero-card">
+                    <div class="hero-badge">📄 Paper Presentation Assistant</div>
+                    <h1 class="hero-title">AI 논문 발표 도우미</h1>
+                    <p class="hero-desc">
+                        논문 PDF를 업로드하면 AI가 연구 목적, 연구 방법, 주요 결과, 한계점을 정리하고
+                        발표 목차, 5분 발표 대본, 예상 질문과 답변까지 생성합니다.
+                    </p>
+                </section>
+
+                <section class="guide-grid">
+                    <div class="guide-box">
+                        <strong>📌 핵심 요약</strong>
+                        <span>논문의 주제와 전체 흐름을 빠르게 파악할 수 있게 정리합니다.</span>
+                    </div>
+                    <div class="guide-box">
+                        <strong>🎯 연구 목적</strong>
+                        <span>이 연구가 무엇을 밝히고자 했는지 발표용 문장으로 정리합니다.</span>
+                    </div>
+                    <div class="guide-box">
+                        <strong>🧪 연구 방법</strong>
+                        <span>연구 대상, 자료, 분석 방법을 쉽게 설명합니다.</span>
+                    </div>
+                    <div class="guide-box">
+                        <strong>🎤 발표 대본</strong>
+                        <span>실제 발표자가 읽을 수 있는 5분 분량의 대본을 생성합니다.</span>
+                    </div>
+                </section>
+                """
+            )
+
+            with gr.Group(elem_classes=["upload-panel"]):
+                gr.Markdown("## 논문 PDF 업로드")
+                gr.Markdown("분석할 논문 PDF 파일을 업로드한 뒤 아래 버튼을 눌러 주세요.")
+                pdf_input = gr.File(
+                    label="PDF 파일 선택",
+                    file_types=[".pdf"]
+                )
+                submit_btn = gr.Button("논문 분석하기", variant="primary")
+
+            with gr.Group(elem_classes=["result-panel"]):
+                gr.Markdown("## AI 분석 결과")
+                output = gr.Markdown(
+                    value="PDF를 업로드하고 분석 버튼을 누르면 결과가 여기에 표시됩니다."
+                )
+
+            submit_btn.click(
+                fn=analyze_paper,
+                inputs=pdf_input,
+                outputs=output,
+            )
+
+            gr.HTML(
+                """
+                <p class="footer-note">
+                    ※ 결과는 발표 준비를 돕기 위한 AI 생성 초안입니다. 실제 발표 전 논문 원문과 반드시 대조해 주세요.
+                </p>
+                """
+            )
+
+    return demo
 
 
 demo = build_ui()
