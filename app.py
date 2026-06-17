@@ -201,6 +201,23 @@ CUSTOM_CSS = """
     margin: 0;
 }
 
+.hero-card,
+.hero-card * {
+    color: white !important;
+}
+
+.hero-card .hero-title {
+    color: white !important;
+}
+
+.hero-card .hero-desc {
+    color: rgba(255,255,255,0.95) !important;
+}
+
+.hero-card .hero-badge {
+    color: white !important;
+}
+
 .guide-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -632,7 +649,7 @@ EMPTY_RESULT_HTML = """
 
 
 def build_ui():
-    with gr.Blocks(css=CUSTOM_CSS, title="AI 논문 분석석 도우미") as demo:
+    with gr.Blocks(css=CUSTOM_CSS, title="AI 논문 분석 도우미") as demo:
         with gr.Column(elem_classes=["main-wrap"]):
             gr.HTML(
                 """
